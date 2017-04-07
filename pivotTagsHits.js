@@ -10,9 +10,10 @@
      console.log('./pivotTagHits.js <JSON-TAG-FILE> <ARTICLE-VIEWS-CSV>')
  }
 
- if(process.argv !== 4){
+ if(process.argv.length !== 4){
      console.log("missing args");
      printUsage();
+     process.exit(0);
  }
 
 fs = require('fs')
