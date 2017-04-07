@@ -4,3 +4,4 @@ logs/*
 *.json
 .Rhistory
 .Rproj.user/*
+.Rproj.user

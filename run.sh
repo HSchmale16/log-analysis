@@ -36,4 +36,4 @@ cd $CWD
 
 # run the log analysis
 ./log_count_views.py $PlaceLogs/* > $ArticleViewCsv
-
+./pivotTagHits.js posttags.json $ArticleViewCsv
