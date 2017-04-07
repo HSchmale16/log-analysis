@@ -1,0 +1,6 @@
+logs/*
+*.html
+*.csv
+*.json
+.Rhistory
+.Rproj.user/*
