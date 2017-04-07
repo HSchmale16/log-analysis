@@ -1,6 +1,9 @@
 #!/bin/bash
 # gets the logs
 
+
+# Location to place downloaded logs
+PlaceLogs=./logs
 # ssh connection to sftp files from
 SSHLocation=hjsblog
 # Location and pattern of logs
