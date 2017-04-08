@@ -3,6 +3,7 @@
 
 library(ggplot2)
 library(rjson)
+library(reshape2)
 
 articleViewCount <- data.frame(
   read.csv('articleViews.csv', header = FALSE))
