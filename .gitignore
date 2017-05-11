@@ -1,8 +1,15 @@
+# Working Data Directory
 logs/*
+posttags.json
+
+# Default R Excludes
 *.html
 *.csv
-*.json
 .Rhistory
 .Rproj.user/*
 .Rproj.user
 .RData
+*.pdf
+
+# Node Stuff
+node_modules
