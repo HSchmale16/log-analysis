@@ -1,7 +1,6 @@
 #!/bin/bash
 # gets the logs
 
-
 # Location to place downloaded logs
 PlaceLogs=./logs
 # ssh connection to sftp files from
@@ -16,6 +15,11 @@ GetLogs=../logs/access*
 CWD=$(pwd)
 
 # move to get location
+if [ "$(ls -A $PlaceLogs)" ] 
+then
+    echo $PlaceLogs is not empty
+    return
+fi
 mkdir -p $PlaceLogs
 cd $PlaceLogs
 

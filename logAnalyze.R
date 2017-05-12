@@ -15,6 +15,8 @@ names(hitCounts) <- c('path', 'hits')
 
 livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
 
+
+# Create the count of the hits per tag.
 tagHits <- data.frame(row.names = c('tag','hits'),
                       stringsAsFactors = FALSE)
 apply(livePostHit, 1, function(x) {
@@ -25,6 +27,7 @@ apply(livePostHit, 1, function(x) {
   }
 })
 names(tagHits) <- c('tag', 'hits')
+# scan and sum the tags
 tagHitsSum <- tagHits %>%
   group_by(tag) %>%
   summarise(hits = mean(hits))
