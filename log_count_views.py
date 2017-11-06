@@ -7,7 +7,7 @@ import apache_log_parser
 from collections import Counter
 
 line_parser = apache_log_parser.make_parser("%a - %u %t \"%m %U %H\" %s %B \"%{Referer}i\" \"%{User-Agent}i\"")
-bad_ua = re.compile('([Bb]ot|[Ss]pider|[Cc]rawler)')
+bad_ua = re.compile('[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler')
 
 """
 Loads the url_path in all log files
@@ -18,7 +18,7 @@ def handleLogFile(x):
         for x in f:
             try:
                 z = line_parser(x.rstrip())
-                if bad_ua.search(z['request_header_user_agent']) is not None:
+                if bad_ua.search(z['request_header_user_agent']) is None:
                     l.append(z['url_path'])
             except:
                 pass
