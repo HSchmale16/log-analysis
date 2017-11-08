@@ -6,8 +6,12 @@ library(dplyr)
 library(gridExtra)
 
 # Load the post tags file
-postTags <- rjson::fromJSON(file = 'posttags.json')
-livePosts <- names(postTags)
+tags <- rjson::fromJSON(file = 'posttags.json')
+livePosts <- names(tags)
+
+tags.freq <- data.frame(table(unlist(tags)))
+tags.freq$v3 <- tags.freq$Freq / length(unlist(tags))
+colnames(tags.freq) <- c('tag', 'cnt', 'pct')
 
 # Load the Hit Counts
 hitCounts <- read.csv(file = 'articleViews.csv', header = FALSE)
@@ -17,20 +21,21 @@ livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
 
 
 # Create the count of the hits per tag.
-tagHits <- data.frame(row.names = c('tag','hits'),
+tag.hits <- data.frame(row.names = c('tag','hits'),
                       stringsAsFactors = FALSE)
 apply(livePostHit, 1, function(x) {
-  for(tag in postTags[x[1]]) {
-    tagHits <<- rbind(tagHits,
+  for(tag in tags[x[1]]) {
+    tag.hits <<- rbind(tag.hits,
                       data.frame(tag, as.numeric(x[2]),
                                  stringsAsFactors = FALSE))
   }
 })
-names(tagHits) <- c('tag', 'hits')
+
+names(tag.hits) <- c('tag', 'hits')
 # scan and sum the tags
-tagHitsSum <- tagHits %>%
+tagHitsSum <- tag.hits %>%
   group_by(tag) %>%
-  summarise(hits = mean(hits))
+  summarise(avg = mean(hits), tot = sum(hits))
 
 
 # Plot the hits
@@ -39,10 +44,12 @@ ggplot(data=livePostHit, aes(x=path, y=hits)) +
   ggtitle('Views of Each Post') +
   geom_bar(stat="identity") +
   theme(axis.text = element_text(angle=75, hjust = 1))
-ggsave('posthits.pdf')
-ggplot(data=tagHitsSum, aes(x=tag, y=hits)) +
+ggplot(data=tagHitsSum, aes(x=tag, y=avg)) +
   xlab('tag name') + ylab('views') +
-  ggtitle('Views of Each Post') +
+  ggtitle('Views of Each Tag') +
   geom_bar(stat="identity") +
   theme(axis.text = element_text(angle=75, hjust = 1))
-ggsave('taghits.pdf')
+ggplot(data=tagHitsSum, aes(x="",y=tot,fill=tag)) +
+  geom_bar(width = 1, stat='identity') +
+  coord_polar()
+  
