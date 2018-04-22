@@ -21,7 +21,7 @@ then
     return
 fi
 mkdir -p $PlaceLogs
-cd $PlaceLogs
+pushd $PlaceLogs
 
 # perform the get operation
 sftp $SSHLocation << EOF
@@ -33,4 +33,4 @@ EOF
 bunzip2 *.bz2
 
 # return to script dir
-cd $CWD
+popd

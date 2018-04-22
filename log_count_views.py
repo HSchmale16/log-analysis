@@ -1,35 +1,42 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Counts occurances of a post url and counts them up.
+# Also excludes bad user agents 
 
 import sys
 import re
-import apache_log_parser
 from collections import Counter
+from functools import reduce
 
-line_parser = apache_log_parser.make_parser("%a - %u %t \"%m %U %H\" %s %B \"%{Referer}i\" \"%{User-Agent}i\"")
-bad_ua = re.compile('[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler')
 
 """
 Loads the url_path in all log files
 """
-def handleLogFile(x):
-    l = list()
+def do_log_file(x):
+    url_counter = Counter()
+    bad_ua = re.compile('[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler')
     with open(x) as f:
-        for x in f:
-            try:
-                z = line_parser(x.rstrip())
-                if bad_ua.search(z['request_header_user_agent']) is None:
-                    l.append(z['url_path'])
-            except:
-                pass
-    return l
+        for line in f.readlines():
+            match = list((map(''.join,
+                re.findall(r'\"(.*?)\"|\[(.*?)\]|(\S+)', line))))
+            if not bad_ua.match(match[-1]):
+                index = len(match) - 9 + 4
+                if len(match) == 10:
+                    index = 4
+                req = match[index].split()
+                try:
+                    if req[0].upper() != 'GET' or int(match[index + 1]) >= 400:
+                        continue
+                except:
+                    continue
+                url_counter[match[index].split()[1]] += 1
+    return url_counter
 
-urls = map(handleLogFile, sys.argv[1:])
+def main():
+    url_counts = [do_log_file(x) for x in sys.argv[1:]]
+    totals = reduce(lambda accum,x: accum + x, url_counts, Counter())
+    for url,count in totals.items():
+        if url.startswith('/20') and url.endswith('.html'):
+            print('{},{}'.format(url, count))
 
-c = Counter()
-for x in urls:
-    for y in x:
-        if(y.startswith('/20') and y.endswith('html')):
-            c[y] += 1
-for x in c:
-    print(x + ',' + str(c[x]).lower())
+if __name__ == '__main__':
+    main()
