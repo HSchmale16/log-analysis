@@ -4,6 +4,7 @@
 
 import sys
 import re
+from multiprocessing import Pool, cpu_count
 from collections import Counter
 from functools import reduce
 
@@ -23,16 +24,21 @@ def do_log_file(x):
                 if len(match) == 10:
                     index = 4
                 req = match[index].split()
+                
+                # Client Errors or Non Gets Are Excluded From Counts
                 try:
-                    if req[0].upper() != 'GET' or int(match[index + 1]) >= 400:
+                    if req[0].upper() != 'GET' or 200 < \
+                            int(match[index + 1]) < 400:
                         continue
                 except:
                     continue
+                
                 url_counter[match[index].split()[1]] += 1
     return url_counter
 
 def main():
-    url_counts = [do_log_file(x) for x in sys.argv[1:]]
+    with Pool(cpu_count()) as p:
+        url_counts = p.map(do_log_file, sys.argv[1:])
     totals = reduce(lambda accum,x: accum + x, url_counts, Counter())
     for url,count in totals.items():
         if url.startswith('/20') and url.endswith('.html'):
