@@ -12,5 +12,4 @@ PostHitCountCsv=postHits.csv
 
 # run the log analysis
 ./log_count_views.py $PlaceLogs/* | tr [:upper:] [:lower:] | sort > $ArticleViewCsv
-#./pivotTagsHits.js ./posttags.json $ArticleViewCsv > $PostHitCountCsv
 Rscript logAnalyze.R
