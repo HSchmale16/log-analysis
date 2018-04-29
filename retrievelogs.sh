@@ -14,20 +14,14 @@ GetLogs=../logs/access*
 
 CWD=$(pwd)
 
-# move to get location
-if [ "$(ls -A $PlaceLogs)" ] 
-then
-    echo $PlaceLogs is not empty
-    return
-fi
 mkdir -p $PlaceLogs
 pushd $PlaceLogs
 
-# perform the get operation
-sftp $SSHLocation << EOF
-cd $(dirname $GetLogs)
-get $(basename $GetLogs)
-EOF
+# Recompress files because we need to uncomress to read them 
+bzip2 access_log.20* 2>/dev/null
+
+# Only grab new ones
+rsync --checksum -v -a $SSHLocation:$GetLogs . 
 
 # uncompress files
 bunzip2 *.bz2

@@ -10,6 +10,7 @@ from collections import namedtuple
 from functools import reduce
 import time
 
+SetKey = namedtuple('LogKey', ['url', 'date', 'ip'])
 LogKey = namedtuple('LogKey', ['url', 'date'])
 
 def to_date(date):
@@ -26,7 +27,7 @@ def get_status_code(code):
         return -1
 
 def do_log_file(filename):
-    url_counter = Counter()
+    views = set()
     bad_ua = re.compile('[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler')
     logfile = open(filename)
     for line in logfile.readlines():
@@ -50,9 +51,11 @@ def do_log_file(filename):
                 continue
 
             date = get_time(match[3])
-            url_counter[LogKey(url, date)] += 1
+            ip = match[0]
+            views.add(SetKey(url, date, ip))
     logfile.close()
-    return url_counter
+    
+    return Counter(LogKey(url, date) for url,date,ip in views)
 
 def main():
     with Pool(cpu_count()) as pool:
