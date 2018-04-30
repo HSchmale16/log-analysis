@@ -26,15 +26,14 @@ def get_status_code(code):
     except ValueError:
         return -1
 
-def do_log_file(filename):
+def do_log_file(logfile):
     views = set()
     bad_ua = re.compile('[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler')
-    logfile = open(filename)
+    logline_re = re.compile(r'\"(.*?)\"|\[(.*?)\]|(\S+)')
     for line in logfile.readlines():
         if len(line) > 500:
             continue
-        match = list((map(''.join,
-                          re.findall(r'\"(.*?)\"|\[(.*?)\]|(\S+)', line))))
+        match = list(map(''.join, logline_re.findall(line)))
         if not bad_ua.match(match[-1]):
             req_str_index = len(match) - 9 + 4
             if len(match) == 10:
@@ -52,15 +51,26 @@ def do_log_file(filename):
 
             date = get_time(match[3])
             ip = match[0]
-            views.add(SetKey(url, date, ip))
-    logfile.close()
-    
+            views.add(SetKey(url, date, ip)) 
     return Counter(LogKey(url, date) for url,date,ip in views)
 
+def do_filename(filename):
+    with open(filename) as f:
+        return do_log_file(f)
+
+def do_many_files():    
+    with Pool(cpu_count()) as pool:    
+        return pool.map(do_filename, sys.argv[1:])
+
+
 def main():
-    with Pool(cpu_count()) as pool:
-        url_counts = pool.map(do_log_file, sys.argv[1:])
-    totals = reduce(lambda accum, x: accum + x, url_counts, Counter())
+    if len(sys.argv) > 1:
+        url_counts = do_many_files()
+        totals = reduce(lambda accum, x: accum + x,
+                        url_counts, Counter())
+    else:
+        totals = do_log_file(sys.stdin)
+
     for (url, date), count in totals.items():
         if url.startswith('/20') and url.endswith('.html'):
             print('{},{},{}'.format(url, date, count))

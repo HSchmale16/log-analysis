@@ -39,8 +39,8 @@ ggplot(totalHits, aes(x = path, y = hits)) +
 #################################################
 # Grouped By Week
 #################################################
-summarizedPostHit<- livePostHit %>%
-  group_by(path, dates=floor_date(date, "week")) %>%
+summarizedPostHit <- livePostHit %>%
+  group_by(path, dates=floor_date(date, "month")) %>%
   summarize(hits=sum(hits))
 
 ggplot(summarizedPostHit, aes(x = path, y = dates, fill = hits)) +
