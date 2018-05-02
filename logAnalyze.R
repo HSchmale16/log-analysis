@@ -37,7 +37,7 @@ ggplot(totalHits, aes(x = path, y = hits)) +
   ggtitle("Total Views of Posts")
 
 #################################################
-# Grouped By Week
+# Grouped By Month
 #################################################
 summarizedPostHit <- livePostHit %>%
   group_by(path, dates=floor_date(date, "month")) %>%
@@ -46,8 +46,41 @@ summarizedPostHit <- livePostHit %>%
 ggplot(summarizedPostHit, aes(x = path, y = dates, fill = hits)) +
   geom_tile() +
   coord_flip() +
+  geom_text(aes(label = hits)) +
   ggtitle("Post Hits Over Time Grouped By Month") +
   scale_fill_continuous(low='blue', high='red')
+
+
+#################################################
+# Grouped By WeekDay
+#################################################
+
+weekdayPostHit <- livePostHit %>%
+  group_by(path, weekday = wday(date)) %>%
+  summarize(hits=sum(hits))
+
+ggplot(weekdayPostHit, aes(x = path, y = weekday, fill = hits)) +
+  geom_tile() +
+  coord_flip() +
+  geom_text(aes(label = hits)) +
+  ggtitle("Post Hits Grouped By Day Of Week - My Blog") +
+  scale_fill_continuous(low='blue', high='red')
+
+#################################################
+# Grouped By Day of Month
+#################################################
+
+monthdayPostHit <- livePostHit %>%
+  group_by(path, monthday = mday(date)) %>%
+  summarize(hits=sum(hits))
+
+ggplot(monthdayPostHit, aes(x = path, y = monthday, fill = hits)) +
+  geom_tile() +
+  coord_flip() +
+  geom_text(aes(label = hits)) +
+  ggtitle("Post Hits Grouped By Day Of Month - My Blog") +
+  scale_fill_continuous(low='blue', high='red')
+
 
 #################################################
 # Daily Visitors Total                          #
