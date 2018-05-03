@@ -24,6 +24,8 @@ names(hitCounts) <- c('path', 'date', 'hits')
 hitCounts$date <- as.Date(hitCounts$date)
 livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
 
+
+
 #################################################
 # Total Number Of Hits
 #################################################
@@ -80,18 +82,4 @@ ggplot(monthdayPostHit, aes(x = path, y = monthday, fill = hits)) +
   geom_text(aes(label = hits)) +
   ggtitle("Post Hits Grouped By Day Of Month - My Blog") +
   scale_fill_continuous(low='blue', high='red')
-
-
-#################################################
-# Daily Visitors Total                          #
-#################################################
-
-dailyHits <- livePostHit %>%
-  group_by(date) %>%
-  summarise(visitors=sum(hits))
-
-ggplot(dailyHits, aes(x = date, y = visitors)) +
-  geom_bar(stat='identity')
-
-
 
