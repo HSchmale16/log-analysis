@@ -1,4 +1,7 @@
-# logAnalyze.R
+#!/usr/bin/env Rscript
+# make_plots.R
+# Henry J Schmale
+# Log Analysis Plotting Script
 
 library(rjson)
 library(ggplot2)
