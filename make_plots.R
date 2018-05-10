@@ -7,7 +7,6 @@ library(rjson)
 library(ggplot2)
 library(dplyr)
 library(lubridate)
-library(gridExtra)
 library(reshape2)
 
 options(stringsAsFactors = FALSE)
@@ -40,6 +39,18 @@ ggplot(totalHits, aes(x = path, y = hits)) +
   geom_bar(stat = 'identity') +
   theme(axis.text = element_text(angle=75, hjust = 1)) +
   ggtitle("Total Views of Posts")
+
+#################################################
+# Monthly Hits
+#################################################
+
+hits_per_month <- livePostHit %>%
+  group_by(month = floor_date(date, 'month')) %>%
+  summarise(hits = sum(hits))
+
+ggplot(hits_per_month, aes(x = month, y = hits)) +
+  geom_bar(stat = 'identity') +
+  ggtitle("Post Hits Per Month")
 
 #################################################
 # Grouped By Month
@@ -85,4 +96,5 @@ ggplot(monthdayPostHit, aes(x = path, y = monthday, fill = hits)) +
   geom_text(aes(label = hits)) +
   ggtitle("Post Hits Grouped By Day Of Month - My Blog") +
   scale_fill_continuous(low='blue', high='red')
+
 
