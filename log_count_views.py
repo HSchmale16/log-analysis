@@ -34,7 +34,7 @@ def do_log_file(logfile):
         if len(line) > 500:
             continue
         match = list(map(''.join, logline_re.findall(line)))
-        if not bad_ua.match(match[-1]):
+        if not bad_ua.search(match[-1]):
             req_str_index = len(match) - 9 + 4
             if len(match) == 10:
                 req_str_index = 4

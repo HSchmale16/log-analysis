@@ -1,6 +1,7 @@
 # Working Data Directory
 logs/*
 posttags.json
+*.log
 
 # Default R Excludes
 *.html
