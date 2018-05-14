@@ -5,6 +5,7 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
+library(lubridate)
 
 articleViews <- read.csv('../articleViews.csv', header = FALSE)
 colnames(articleViews) <- c('path', 'date', 'hits')
@@ -23,7 +24,10 @@ ui <- fluidPage(
                      "Date Range:",
                      min = min(articleViews$date),
                      max = max(articleViews$date),
-                     value = c(min(articleViews$date), max(articleViews$date)))
+                     value = c(min(articleViews$date), max(articleViews$date))),
+         selectInput("group_by_ts",
+                     "Group By Time Unit:",
+                     c("day", "week", "month"))
       ),
       
       # Show a plot of the generated distribution
@@ -40,7 +44,9 @@ server <- function(input, output) {
    output$plot <- renderPlot({
       rng <- input$range
       
-      x <- filter(articleViews, date >= rng[1], date <= rng[2])
+      x <- filter(articleViews, date >= rng[1], date <= rng[2]) %>%
+        group_by(path, date = floor_date(date, input$group_by_ts)) %>%
+        summarise(hits = sum(hits))
       
       ggplot(x, aes(x = path, y = date, fill = hits)) +
         geom_tile() +
@@ -48,7 +54,7 @@ server <- function(input, output) {
    })
    
    output$text <- renderText({
-     str(input$range)
+     input$group_by_ts
    })
 }
 
