@@ -32,8 +32,8 @@ ui <- fluidPage(
       
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("plot"),
-         verbatimTextOutput('text')
+         plotOutput("viewHeatPlot"),
+         plotOutput("overallViewsPlot")
       )
    )
 )
@@ -41,16 +41,30 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
    
-   output$plot <- renderPlot({
+   output$viewHeatPlot <- renderPlot({
       rng <- input$range
       
-      x <- filter(articleViews, date >= rng[1], date <= rng[2]) %>%
+      groupedHitsOverTs <- filter(articleViews, date >= rng[1], date <= rng[2]) %>%
         group_by(path, date = floor_date(date, input$group_by_ts)) %>%
         summarise(hits = sum(hits))
       
-      ggplot(x, aes(x = path, y = date, fill = hits)) +
+      ggplot(groupedHitsOverTs, aes(x = path, y = date, fill = hits)) +
         geom_tile() +
-        coord_flip()
+        # geom_text(aes(label=hits)) +
+        coord_flip() +
+        scale_fill_continuous(low='blue', high='red')
+   })
+   
+   output$overallViewsPlot <- renderPlot({
+     rng <- input$range
+     
+     hitsOverRng <- filter(articleViews, date >= rng[1], date <= rng[2]) %>%
+       group_by(path) %>%
+       summarise(hits = sum(hits))
+     
+     ggplot(hitsOverRng, aes(x = path, y = hits)) +
+       geom_bar(stat = 'identity') +
+       theme(axis.text.x = element_text(angle = 75, hjust = 1))
    })
    
    output$text <- renderText({

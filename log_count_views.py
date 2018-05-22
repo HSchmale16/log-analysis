@@ -58,14 +58,14 @@ def do_filename(filename):
     with open(filename) as f:
         return do_log_file(f)
 
-def do_many_files():    
+def do_many_files(filenames): 
     with Pool(cpu_count()) as pool:    
-        return pool.map(do_filename, sys.argv[1:])
+        return pool.map(do_filename, filenames)
 
 
 def main():
     if len(sys.argv) > 1:
-        url_counts = do_many_files()
+        url_counts = do_many_files(sys.argv[1:])
         totals = reduce(lambda accum, x: accum + x,
                         url_counts, Counter())
     else:
