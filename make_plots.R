@@ -25,8 +25,7 @@ hitCounts <- read.csv(file = 'articleViews.csv', header = FALSE)
 names(hitCounts) <- c('path', 'date', 'hits')
 hitCounts$date <- as.Date(hitCounts$date)
 livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
-
-
+livePostHit$month <- floor_date(livePostHit$date, 'month')
 
 #################################################
 # Total Number Of Hits
@@ -38,7 +37,8 @@ totalHits <- livePostHit %>%
 ggplot(totalHits, aes(x = path, y = hits)) +
   geom_bar(stat = 'identity') +
   theme(axis.text = element_text(angle=75, hjust = 1)) +
-  ggtitle("Total Views of Posts")
+  ggtitle("Total Views of Posts") +
+  scale_y_log10()
 
 #################################################
 # Monthly Hits
@@ -50,7 +50,8 @@ hits_per_month <- livePostHit %>%
 
 ggplot(hits_per_month, aes(x = month, y = hits)) +
   geom_bar(stat = 'identity') +
-  ggtitle("Post Hits Per Month")
+  ggtitle("Post Hits Per Month") +
+  scale_y_log10()
 
 #################################################
 # Grouped By Month
