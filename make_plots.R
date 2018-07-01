@@ -34,11 +34,11 @@ totalHits <- livePostHit %>%
   group_by(path) %>%
   summarise(hits=sum(hits))
 
-ggplot(totalHits, aes(x = path, y = hits)) +
+ggplot(totalHits, aes(x = path, y = hits, label = hits)) +
   geom_bar(stat = 'identity') +
+  geom_text(size = 3, vjust = -1) +
   theme(axis.text = element_text(angle=75, hjust = 1)) +
-  ggtitle("Total Views of Posts") +
-  scale_y_log10()
+  ggtitle("Total Views of Posts") 
 
 #################################################
 # Monthly Hits
@@ -48,10 +48,10 @@ hits_per_month <- livePostHit %>%
   group_by(month = floor_date(date, 'month')) %>%
   summarise(hits = sum(hits))
 
-ggplot(hits_per_month, aes(x = month, y = hits)) +
+ggplot(hits_per_month, aes(x = month, y = hits, label = hits)) +
   geom_bar(stat = 'identity') +
-  ggtitle("Post Hits Per Month") +
-  scale_y_log10()
+  geom_text(size = 3, vjust = -1) +
+  ggtitle("Post Hits Per Month") 
 
 #################################################
 # Grouped By Month
