@@ -73,7 +73,7 @@ ggplot(summarizedPostHit, aes(x = path, y = dates, fill = hits)) +
 #################################################
 
 weekdayPostHit <- livePostHit %>%
-  group_by(path, weekday = wday(date)) %>%
+  group_by(path, weekday = wday(date, label = TRUE)) %>%
   summarize(hits=sum(hits))
 
 ggplot(weekdayPostHit, aes(x = path, y = weekday, fill = hits)) +
