@@ -12,6 +12,10 @@ GetLogs=../logs/access*
 #######################################
 #######################################
 
+function getReqCount() {
+    wc -l access_log | cut -d' ' -f1
+}
+
 CWD=$(pwd)
 
 mkdir -p $PlaceLogs
@@ -21,7 +25,11 @@ pushd $PlaceLogs
 bzip2 access_log.20* 2>/dev/null
 
 # Only grab new ones
+last_count=$(getReqCount)
 rsync --checksum -v -a $SSHLocation:$GetLogs . 
+new_count=$(getReqCount)
+
+echo "Retrieved $(($new_count - $last_count)) new requests"
 
 # uncompress files
 bunzip2 *.bz2
