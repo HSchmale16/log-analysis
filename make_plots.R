@@ -38,7 +38,23 @@ ggplot(totalHits, aes(x = path, y = hits, label = hits)) +
   geom_bar(stat = 'identity') +
   geom_text(size = 3, vjust = -1) +
   theme(axis.text = element_text(angle=75, hjust = 1)) +
-  ggtitle("Total Views of Posts") 
+  ggtitle("Total Views of Posts")
+
+#################################################
+# Post Hits in the Last N Days (LAST_N_DAYS)
+#################################################
+LAST_N_DAYS <- 30
+bisect_date <- as.Date(today(), format="%Y-%m-%d") - LAST_N_DAYS
+
+livePostHit %>%
+  filter(date >= bisect_date) %>%
+  group_by(path) %>%
+  summarise(hits = sum(hits)) %>%
+  ggplot(aes(x = path, y = hits, label = hits)) +
+    geom_bar(stat='identity') +
+    geom_text(size = 3, vjust = -1) +
+    theme(axis.text = element_text(angle=75, hjust = 1)) +
+    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
 
 #################################################
 # Monthly Hits
