@@ -25,7 +25,6 @@ hitCounts <- read.csv(file = 'articleViews.csv', header = FALSE)
 names(hitCounts) <- c('path', 'date', 'hits')
 hitCounts$date <- as.Date(hitCounts$date)
 livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
-livePostHit$month <- floor_date(livePostHit$date, 'month')
 
 #################################################
 # Total Number Of Hits
@@ -55,6 +54,31 @@ livePostHit %>%
     geom_text(size = 3, vjust = -1) +
     theme(axis.text = element_text(angle=75, hjust = 1)) +
     ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
+
+#################################################
+# Daily Hits
+#################################################
+daily_hits <- livePostHit %>%
+    group_by(date) %>%
+    summarise(daily=sum(hits)) %>%
+    arrange(date) %>% 
+    mutate(total=cumsum(daily), year=year(date), yearday=strftime(date, "%j"))
+
+daily_hits$yearday <- as.numeric(daily_hits$yearday)
+daily_hits$year <- as.factor(daily_hits$year)
+
+ggplot(daily_hits, aes(x = yearday, y = daily, fill=year)) +
+    geom_bar(stat='identity') + 
+    facet_grid(year ~ .) +
+    ggtitle("Daily Post Hit Counts")
+
+daily_hits %>%
+    group_by(year) %>% 
+    arrange(date) %>% 
+    mutate(cs = cumsum(daily)) %>%
+    ggplot(aes(x = yearday, y = cs, color=year)) +
+        geom_line() +
+        ggtitle('Cummulative Daily Post Hits Year Over Year')
 
 #################################################
 # Monthly Hits
