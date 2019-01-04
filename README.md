@@ -27,3 +27,7 @@ You also need a json file named posttags.json formatted as below. It's an object
 Then you can run from the current directory:
 
     ./retrievelogs.sh && ./run.sh && $YOUR_PDF_VIEWER Rplots.pdf
+
+# How Views Are Counted
+
+As of right now, views are counted once per ip, post and date. That is what is place in the articleViews.csv file.
