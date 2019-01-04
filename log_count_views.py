@@ -13,6 +13,9 @@ import time
 SetKey = namedtuple('LogKey', ['url', 'date', 'ip'])
 LogKey = namedtuple('LogKey', ['url', 'date'])
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 def to_date(date):
     return time.strftime('%Y/%m/%d', date)
 
@@ -42,7 +45,11 @@ def do_log_file(logfile):
 
             # Client Errors or Non Gets Are Excluded From Counts
             status_code = get_status_code(match[req_str_index + 1])
-            url = req[1]
+            try:
+                url = req[1]
+            except IndexError:
+                eprint(line)
+                continue
 
             if req[0].upper() != 'GET' and \
                     not 200 <= status_code < 400 or \
