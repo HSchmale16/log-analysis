@@ -80,7 +80,7 @@ def main():
 
     for (url, date), count in totals.items():
         if url.startswith('/20') and url.endswith('.html'):
-            print('{},{},{}'.format(url, date, count))
+            print(','.join([url, date, str(count)]))
 
 if __name__ == '__main__':
     main()
