@@ -55,6 +55,16 @@ livePostHit %>%
     theme(axis.text = element_text(angle=75, hjust = 1)) +
     ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
 
+livePostHit %>%
+    filter(date >= bisect_date) %>%
+    group_by(date) %>%
+    summarize(hits=sum(hits)) %>%
+    ggplot(aes(x = date, y = hits, label = hits)) +
+        geom_bar(stat='identity') +
+        geom_text(size = 3, vjust=-1) +
+        theme(axis.text = element_text(angle=75, hjust = 1)) +
+        ggtitle(paste("Hit Counts in the Past", LAST_N_DAYS, "Days as of ", today()))
+        
 
 livePostHit %>%
     filter(date >= bisect_date) %>%
@@ -66,6 +76,7 @@ livePostHit %>%
       geom_text(aes(label = hits)) +
       ggtitle("When posts were hit in the last 30 days") +
       scale_fill_continuous(low='blue', high='red')
+
 
 #################################################
 # Daily Hits
