@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/HSchmale16/log-analysis#readme",
   "dependencies": {
-    "csv-parse": "^1.2.0"
+    "csv-parse": "^4.6.5"
   }
 }
