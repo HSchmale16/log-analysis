@@ -31,7 +31,9 @@ def get_status_code(code):
 
 def do_log_file(logfile):
     views = set()
-    bad_ua = re.compile('[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler')
+    bad_ua = re.compile(
+        '[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler|[Ss]em[Rr]ush'
+    )
     logline_re = re.compile(r'\"(.*?)\"|\[(.*?)\]|(\S+)')
     for line in logfile.readlines():
         if len(line) > 500:

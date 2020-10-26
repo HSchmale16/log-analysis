@@ -24,7 +24,13 @@ livePosts <- names(tags)
 hitCounts <- read.csv(file = 'articleViews.csv', header = FALSE)
 names(hitCounts) <- c('path', 'date', 'hits')
 hitCounts$date <- as.Date(hitCounts$date)
+
+# deadPostHit <- hitCounts[!hitCounts$path %in% livePosts,]
+
+# Select only those posts which currently are live on my site.
 livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
+
+
 
 #################################################
 # Total Number Of Hits
@@ -33,10 +39,15 @@ totalHits <- livePostHit %>%
   group_by(path) %>%
   summarise(hits=sum(hits))
 
-ggplot(totalHits, aes(x = path, y = hits, label = hits)) +
+#ggplot(totalHits, aes(x = path, y = hits, label = hits)) +
+#  geom_bar(stat = 'identity') +
+#  geom_text(size = 3, vjust = -1) +
+#  theme(axis.text = element_text(angle=75, hjust = 1)) +
+#  ggtitle("Total Views of Posts")
+
+ggplot(totalHits, aes(y = path, x = hits, label = hits)) +
   geom_bar(stat = 'identity') +
-  geom_text(size = 3, vjust = -1) +
-  theme(axis.text = element_text(angle=75, hjust = 1)) +
+  geom_text(size = 3, hjust = -1) +
   ggtitle("Total Views of Posts")
 
 #################################################
@@ -49,10 +60,9 @@ livePostHit %>%
   filter(date >= bisect_date) %>%
   group_by(path) %>%
   summarise(hits = sum(hits)) %>%
-  ggplot(aes(x = path, y = hits, label = hits)) +
+  ggplot(aes(y = path, x = hits, label = hits)) +
     geom_bar(stat='identity') +
-    geom_text(size = 3, vjust = -1) +
-    theme(axis.text = element_text(angle=75, hjust = 1)) +
+    geom_text(size = 3, hjust = -1) +
     ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
 
 livePostHit %>%
@@ -161,4 +171,39 @@ ggplot(monthdayPostHit, aes(x = path, y = monthday, fill = hits)) +
   ggtitle("Post Hits Grouped By Day Of Month - My Blog") +
   scale_fill_continuous(low='blue', high='red')
 
+#################################################
+# Post view activity normalized for time since 
+# publication. The pubDate is known by the path
+# name.
+#################################################
+
+normHitsSincePub <- livePostHit %>%
+  group_by(path) %>%
+  arrange(date) %>%
+  mutate(
+    hitsSincePub = cumsum(hits),
+    hitsPercentile = rank(hits),
+    pubDate = as.Date(substr(path, 2, 11)),
+    daysSincePub = date - pubDate
+  )
+
+NUM_MOST_RECENT_POSTS <- 5
+
+getMostRecentPosts <- function(n=NUM_MOST_RECENT_POSTS) {
+  k <- data.frame(
+    post_names = livePosts,
+    pubDate = substr(livePosts, 2, 11)
+  )
+  k <- k %>% arrange(desc(pubDate)) %>% top_n(n)
+  k$post_names
+}
+
+mostRecentPosts <- getMostRecentPosts()
+
+normHitsSincePub %>%
+  filter(path %in% mostRecentPosts, daysSincePub < 366) %>%
+  ggplot(aes(x = daysSincePub, y = hitsSincePub, color=path)) +
+    geom_line()
+
+#ggplot(normHitsSincePub, aes(x = daysSincePub, fill=hitsSincePub)) + geom_density()
 
