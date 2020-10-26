@@ -184,10 +184,10 @@ normHitsSincePub <- livePostHit %>%
     hitsSincePub = cumsum(hits),
     hitsPercentile = rank(hits),
     pubDate = as.Date(substr(path, 2, 11)),
-    daysSincePub = date - pubDate
+    daysSincePub = as.integer(date - pubDate)
   )
 
-NUM_MOST_RECENT_POSTS <- 5
+NUM_MOST_RECENT_POSTS <- 6
 
 getMostRecentPosts <- function(n=NUM_MOST_RECENT_POSTS) {
   k <- data.frame(
@@ -201,9 +201,21 @@ getMostRecentPosts <- function(n=NUM_MOST_RECENT_POSTS) {
 mostRecentPosts <- getMostRecentPosts()
 
 normHitsSincePub %>%
-  filter(path %in% mostRecentPosts, daysSincePub < 366) %>%
-  ggplot(aes(x = daysSincePub, y = hitsSincePub, color=path)) +
-    geom_line()
+  filter(path %in% mostRecentPosts, daysSincePub < 366) -> five_most_recent
 
-#ggplot(normHitsSincePub, aes(x = daysSincePub, fill=hitsSincePub)) + geom_density()
+normHitsSincePub %>%
+  filter(daysSincePub < 366) %>%
+  group_by(daysSincePub) %>%
+  summarise(
+    ymin = min(hitsSincePub),
+    ymax = max(hitsSincePub),
+    hsp_mean = mean(hitsSincePub),
+    hsp_stdev = sd(hitsSincePub)
+  ) %>%
+  inner_join(five_most_recent, by="daysSincePub") %>%
+  ggplot(aes(x = daysSincePub, y = hitsSincePub)) +
+    geom_line(aes(color=path)) +
+    geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
+    ggtitle(paste(NUM_MOST_RECENT_POSTS, "Most Recent Posts and Performance in First Year of Publication")) +
+    theme(legend.position="bottom")
 
