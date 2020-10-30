@@ -10,6 +10,11 @@ from collections import namedtuple
 from functools import reduce
 import time
 
+# The maximum length of a line before we bail out on processing it. This
+# is set to deal with lines meant to attack my blog, but they can't
+# because it's static.
+MAX_LINE_LENGTH = 900
+
 SetKey = namedtuple('LogKey', ['url', 'date', 'ip'])
 LogKey = namedtuple('LogKey', ['url', 'date'])
 
@@ -36,7 +41,7 @@ def do_log_file(logfile):
     )
     logline_re = re.compile(r'\"(.*?)\"|\[(.*?)\]|(\S+)')
     for line in logfile.readlines():
-        if len(line) > 500:
+        if len(line) > MAX_LINE_LENGTH:
             continue
         match = list(map(''.join, logline_re.findall(line)))
         if not bad_ua.search(match[-1]):

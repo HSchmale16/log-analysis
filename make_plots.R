@@ -8,8 +8,22 @@ library(ggplot2)
 library(dplyr)
 library(lubridate)
 library(reshape2)
+library(scales)
 
-options(stringsAsFactors = FALSE)
+
+#############################################
+# Some Knobs to twist and turn
+#############################################
+
+NUM_MOST_RECENT_POSTS <- 6
+
+LAST_N_DAYS <- 30
+bisect_date <- as.Date(today(), format="%Y-%m-%d") - LAST_N_DAYS
+
+#############################################
+# Begin primary code execution
+#############################################
+#options(stringsAsFactors = FALSE)
 
 if (! interactive()) {
   options(device = 'pdf')
@@ -35,26 +49,24 @@ livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
 #################################################
 # Total Number Of Hits
 #################################################
-totalHits <- livePostHit %>%
+postTotalHitsAllTime <- livePostHit %>%
   group_by(path) %>%
   summarise(hits=sum(hits))
 
-#ggplot(totalHits, aes(x = path, y = hits, label = hits)) +
-#  geom_bar(stat = 'identity') +
-#  geom_text(size = 3, vjust = -1) +
-#  theme(axis.text = element_text(angle=75, hjust = 1)) +
-#  ggtitle("Total Views of Posts")
-
-ggplot(totalHits, aes(y = path, x = hits, label = hits)) +
-  geom_bar(stat = 'identity') +
-  geom_text(size = 3, hjust = -1) +
+ggplot(postTotalHitsAllTime, aes(y = path, x = hits, label = hits)) +
+  geom_bar(stat = 'identity', fill="lightblue") +
+  geom_text(size = 3) +
   ggtitle("Total Views of Posts")
+
+# Gets the most viewed posts of all time
+getMostViewedAllTimePosts <- function(n=NUM_MOST_RECENT_POSTS) {
+  postTotalHitsAllTime %>% arrange(-hits) %>% top_n(n) %>% select(path)
+}
 
 #################################################
 # Post Hits in the Last N Days (LAST_N_DAYS)
 #################################################
-LAST_N_DAYS <- 30
-bisect_date <- as.Date(today(), format="%Y-%m-%d") - LAST_N_DAYS
+
 
 livePostHit %>%
   filter(date >= bisect_date) %>%
@@ -127,17 +139,18 @@ ggplot(hits_per_month, aes(x = month, y = hits, label = hits)) +
   ggtitle("Post Hits Per Month") 
 
 #################################################
-# Grouped By Month
+# Grouped By Quarter, since it's getting really
+# quite big my 
 #################################################
 summarizedPostHit <- livePostHit %>%
-  group_by(path, dates=floor_date(date, "month")) %>%
-  summarize(hits=sum(hits))
+  group_by(path, dates=floor_date(date, "quarter")) %>%
+  summarize(hits=sum(hits), pubDate=as.Date(substr(path,2,11)))
 
 ggplot(summarizedPostHit, aes(x = path, y = dates, fill = hits)) +
   geom_tile() +
   coord_flip() +
   geom_text(aes(label = hits)) +
-  ggtitle("Post Hits Over Time Grouped By Month") +
+  ggtitle("Post Hits Over Time Grouped By Quarter") +
   scale_fill_continuous(low='blue', high='red')
 
 
@@ -187,7 +200,6 @@ normHitsSincePub <- livePostHit %>%
     daysSincePub = as.integer(date - pubDate)
   )
 
-NUM_MOST_RECENT_POSTS <- 6
 
 getMostRecentPosts <- function(n=NUM_MOST_RECENT_POSTS) {
   k <- data.frame(
@@ -198,24 +210,61 @@ getMostRecentPosts <- function(n=NUM_MOST_RECENT_POSTS) {
   k$post_names
 }
 
-mostRecentPosts <- getMostRecentPosts()
 
-normHitsSincePub %>%
-  filter(path %in% mostRecentPosts, daysSincePub < 366) -> five_most_recent
 
-normHitsSincePub %>%
-  filter(daysSincePub < 366) %>%
+N_MOST_RECENT_POSTS <- getMostRecentPosts()
+most_recent_posts_data <- normHitsSincePub %>%
+  filter(path %in% N_MOST_RECENT_POSTS, daysSincePub < 366)
+
+normHitsStdDev <- normHitsSincePub %>%
   group_by(daysSincePub) %>%
   summarise(
     ymin = min(hitsSincePub),
     ymax = max(hitsSincePub),
     hsp_mean = mean(hitsSincePub),
-    hsp_stdev = sd(hitsSincePub)
-  ) %>%
-  inner_join(five_most_recent, by="daysSincePub") %>%
+    hsp_stdev = mad(hitsSincePub),
+    cnt = n()
+  )
+
+normHitsStdDev %>%
+  filter(daysSincePub < 30) %>%
+  inner_join(most_recent_posts_data, by="daysSincePub") %>%
   ggplot(aes(x = daysSincePub, y = hitsSincePub)) +
     geom_line(aes(color=path)) +
+    geom_point(aes(shape=path, color=path)) +
+    geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
+    ggtitle(paste(NUM_MOST_RECENT_POSTS, "Most Recent Posts and Performance in First 30 Days of Publication")) +
+    theme(legend.position="bottom") +
+    guides(colour = guide_legend(nrow = 2))
+
+
+normHitsStdDev %>%
+  filter(daysSincePub < 366) %>%
+  inner_join(most_recent_posts_data, by="daysSincePub") %>%
+  ggplot(aes(x = daysSincePub, y = hitsSincePub)) +
+    geom_line(aes(color=path)) +
+    geom_point(aes(shape=path, color=path)) +
     geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
     ggtitle(paste(NUM_MOST_RECENT_POSTS, "Most Recent Posts and Performance in First Year of Publication")) +
-    theme(legend.position="bottom")
+    theme(legend.position="bottom") +
+    guides(colour = guide_legend(nrow = 2))
 
+
+normHitsSincePub %>%
+  filter(daysSincePub < 366) %>%
+  group_by(path) %>%
+  summarise(max_hits=max(hitsSincePub)) %>%
+  arrange(-max_hits) %>%
+  top_n(NUM_MOST_RECENT_POSTS) %>%
+  inner_join(normHitsSincePub) %>%
+  filter(daysSincePub < 366) %>%
+  inner_join(normHitsStdDev) %>%
+  ggplot(aes(x = daysSincePub, y = hitsSincePub)) +
+    geom_line(aes(color=path)) +
+    geom_point(aes(shape=path, color=path)) +
+    geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
+    ggtitle(paste("Views of ", NUM_MOST_RECENT_POSTS, "most viewed posts in their first year")) +
+    theme(legend.position="bottom") +
+    guides(colour = guide_legend(nrow = 2))
+
+    
