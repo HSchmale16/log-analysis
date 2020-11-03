@@ -9,6 +9,7 @@ library(dplyr)
 library(lubridate)
 library(reshape2)
 library(scales)
+library(tidyr)
 
 
 #############################################
@@ -33,6 +34,23 @@ if (! interactive()) {
 # Load the post tags file
 tags <- rjson::fromJSON(file = 'posttags.json')
 livePosts <- names(tags)
+
+
+# For the Future to develop a better category stuff
+buildPostToTagMapping <- function(posttags_json=tags) {
+  posts <- c()
+  tags <- c()
+  for (postname in names(posttags_json)) {
+    for (tag in posttags_json[[postname]]) {
+      posts <- append(posts, postname)
+      tags <- append(tags, tag)
+    }
+  }
+  data.frame(
+    path = posts,
+    tag = tags
+  )
+}
 
 # Load the Hit Counts
 hitCounts <- read.csv(file = 'articleViews.csv', header = FALSE)
@@ -73,7 +91,7 @@ livePostHit %>%
   group_by(path) %>%
   summarise(hits = sum(hits)) %>%
   ggplot(aes(y = path, x = hits, label = hits)) +
-    geom_bar(stat='identity') +
+    geom_bar(stat="identity") +
     geom_text(size = 3, hjust = -1) +
     ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
 
@@ -82,7 +100,7 @@ livePostHit %>%
     group_by(date) %>%
     summarize(hits=sum(hits)) %>%
     ggplot(aes(x = date, y = hits, label = hits)) +
-        geom_bar(stat='identity') +
+        geom_line() +
         geom_text(size = 3, vjust=-1) +
         theme(axis.text = element_text(angle=75, hjust = 1)) +
         ggtitle(paste("Hit Counts in the Past", LAST_N_DAYS, "Days as of ", today()))
@@ -195,10 +213,16 @@ normHitsSincePub <- livePostHit %>%
   arrange(date) %>%
   mutate(
     hitsSincePub = cumsum(hits),
-    hitsPercentile = rank(hits),
     pubDate = as.Date(substr(path, 2, 11)),
     daysSincePub = as.integer(date - pubDate)
   )
+
+normHitsSincePub %>% 
+  slice_max(order_by = hitsSincePub, n=1) %>%
+  ggplot(aes(x=daysSincePub, y=hitsSincePub)) +
+  geom_point() +
+  ggtitle(paste("Days Since Pub vs Total Hits at Current Views as of", today()))
+
 
 
 getMostRecentPosts <- function(n=NUM_MOST_RECENT_POSTS) {
@@ -217,17 +241,20 @@ most_recent_posts_data <- normHitsSincePub %>%
   filter(path %in% N_MOST_RECENT_POSTS, daysSincePub < 366)
 
 normHitsStdDev <- normHitsSincePub %>%
+  complete(date = seq.Date(min(date), max(date), by="day")) %>%
+  fill(hitsSincePub, pubDate) %>%
+  mutate(daysSincePub = as.integer(date - pubDate)) %>%
   group_by(daysSincePub) %>%
   summarise(
     ymin = min(hitsSincePub),
     ymax = max(hitsSincePub),
     hsp_mean = mean(hitsSincePub),
-    hsp_stdev = mad(hitsSincePub),
+    hsp_stdev = mad(hitsSincePub, center = mean(hitsSincePub)),
     cnt = n()
   )
 
 normHitsStdDev %>%
-  filter(daysSincePub < 30) %>%
+  filter(daysSincePub < 31) %>%
   inner_join(most_recent_posts_data, by="daysSincePub") %>%
   ggplot(aes(x = daysSincePub, y = hitsSincePub)) +
     geom_line(aes(color=path)) +
@@ -235,7 +262,7 @@ normHitsStdDev %>%
     geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
     ggtitle(paste(NUM_MOST_RECENT_POSTS, "Most Recent Posts and Performance in First 30 Days of Publication")) +
     theme(legend.position="bottom") +
-    guides(colour = guide_legend(nrow = 2))
+    guides(colour = guide_legend(nrow = 3))
 
 
 normHitsStdDev %>%
@@ -249,7 +276,7 @@ normHitsStdDev %>%
     theme(legend.position="bottom") +
     guides(colour = guide_legend(nrow = 2))
 
-
+# At the end of the first year of publication. What were the most viewed posts? Display them against the average views.
 normHitsSincePub %>%
   filter(daysSincePub < 366) %>%
   group_by(path) %>%
@@ -263,8 +290,8 @@ normHitsSincePub %>%
     geom_line(aes(color=path)) +
     geom_point(aes(shape=path, color=path)) +
     geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
-    ggtitle(paste("Views of ", NUM_MOST_RECENT_POSTS, "most viewed posts in their first year")) +
+    ggtitle(paste("Hits of ", NUM_MOST_RECENT_POSTS, " most viewed posts in their first year")) +
     theme(legend.position="bottom") +
-    guides(colour = guide_legend(nrow = 2))
+    guides(colour = guide_legend(nrow = 3))
 
     

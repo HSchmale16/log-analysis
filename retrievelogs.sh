@@ -13,7 +13,7 @@ GetLogs=../logs/access*
 #######################################
 
 function getReqCount() {
-    wc -l access_log | cut -d' ' -f1
+    wc -l access_log* | tail -n 1 | awk '{print $1}' 
 }
 
 CWD=$(pwd)
@@ -21,18 +21,20 @@ CWD=$(pwd)
 mkdir -p $PlaceLogs
 pushd $PlaceLogs
 
-# Recompress files because we need to uncomress to read them 
-bzip2 access_log.20* 2>/dev/null
 
 # Only grab new ones
 last_count=$(getReqCount)
-rsync --checksum -v -a $SSHLocation:$GetLogs . 
-new_count=$(getReqCount)
+echo $last_count
 
-echo "Retrieved $(($new_count - $last_count)) new requests"
+# Recompress files because we need to uncomress to read them 
+bzip2 access_log.20* 2>/dev/null
+rsync --checksum -v -a $SSHLocation:$GetLogs . 
 
 # uncompress files
 bunzip2 *.bz2
+new_count=$(getReqCount)
+echo $new_count
+echo "Retrieved $(($new_count - $last_count)) new requests"
 
 # return to script dir
 popd
