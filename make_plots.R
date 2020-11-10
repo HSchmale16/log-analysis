@@ -86,7 +86,7 @@ getMostViewedAllTimePosts <- function(n=NUM_MOST_RECENT_POSTS) {
 #################################################
 
 
-livePostHit %>%
+postHits_N_Days <- livePostHit %>%
   filter(date >= bisect_date) %>%
   group_by(path) %>%
   summarise(hits = sum(hits)) %>%
@@ -94,6 +94,21 @@ livePostHit %>%
     geom_bar(stat="identity") +
     geom_text(size = 3, hjust = -1) +
     ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
+
+postHits_N_Days_Grouped <- livePostHit %>%
+  filter(date >= bisect_date) %>%
+  mutate(daysAgo=as.integer(today() - date),
+         weeksAgo = as.factor(floor(daysAgo/7))) %>%
+  group_by(path, weeksAgo) %>%
+  summarise(hits = sum(hits)) %>%
+  ggplot(aes(y = path, x = hits, label=hits, fill=weeksAgo)) +
+    geom_bar(stat="identity") +
+    theme(legend.position="bottom") +
+    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of", today(), "grouped by 7 day interval"))
+
+gridExtra::grid.arrange(postHits_N_Days, postHits_N_Days_Grouped)
+
+rm(postHits_N_Days, postHits_N_Days_Grouped)
 
 livePostHit %>%
     filter(date >= bisect_date) %>%
@@ -262,19 +277,21 @@ normHitsStdDev %>%
     geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
     ggtitle(paste(NUM_MOST_RECENT_POSTS, "Most Recent Posts and Performance in First 30 Days of Publication")) +
     theme(legend.position="bottom") +
-    guides(colour = guide_legend(nrow = 3))
+    guides(colour = guide_legend(nrow = 3)) +
+    coord_cartesian(xlim = c(0,31))
 
 
 normHitsStdDev %>%
   filter(daysSincePub < 366) %>%
-  inner_join(most_recent_posts_data, by="daysSincePub") %>%
+  left_join(most_recent_posts_data, by="daysSincePub") %>%
   ggplot(aes(x = daysSincePub, y = hitsSincePub)) +
     geom_line(aes(color=path)) +
     geom_point(aes(shape=path, color=path)) +
     geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
     ggtitle(paste(NUM_MOST_RECENT_POSTS, "Most Recent Posts and Performance in First Year of Publication")) +
     theme(legend.position="bottom") +
-    guides(colour = guide_legend(nrow = 2))
+    guides(colour = guide_legend(nrow = 2)) +
+    coord_cartesian(xlim=c(0,366))
 
 # At the end of the first year of publication. What were the most viewed posts? Display them against the average views.
 normHitsSincePub %>%
@@ -292,6 +309,7 @@ normHitsSincePub %>%
     geom_ribbon(aes(ymin=hsp_mean - hsp_stdev, ymax=hsp_mean + hsp_stdev), alpha=0.1) +
     ggtitle(paste("Hits of ", NUM_MOST_RECENT_POSTS, " most viewed posts in their first year")) +
     theme(legend.position="bottom") +
-    guides(colour = guide_legend(nrow = 3))
+    guides(colour = guide_legend(nrow = 3)) +
+    coord_cartesian(xlim=c(0,366))
 
     

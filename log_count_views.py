@@ -73,7 +73,7 @@ def do_filename(filename):
         return do_log_file(f)
 
 def do_many_files(filenames): 
-    with Pool(cpu_count()) as pool:    
+    with Pool(cpu_count()) as pool: 
         return pool.map(do_filename, filenames)
 
 
