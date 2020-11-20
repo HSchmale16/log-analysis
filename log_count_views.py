@@ -55,7 +55,6 @@ def do_log_file(logfile):
             try:
                 url = req[1]
             except IndexError:
-                eprint(line)
                 continue
 
             if req[0].upper() != 'GET' and \

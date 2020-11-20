@@ -98,13 +98,13 @@ postHits_N_Days <- livePostHit %>%
 postHits_N_Days_Grouped <- livePostHit %>%
   filter(date >= bisect_date) %>%
   mutate(daysAgo=as.integer(today() - date),
-         weeksAgo = as.factor(floor(daysAgo/7))) %>%
-  group_by(path, weeksAgo) %>%
+         chunks = as.factor(floor(daysAgo/10))) %>%
+  group_by(path, chunks) %>%
   summarise(hits = sum(hits)) %>%
-  ggplot(aes(y = path, x = hits, label=hits, fill=weeksAgo)) +
+  ggplot(aes(y = path, x = hits, label=hits, fill=chunks)) +
     geom_bar(stat="identity") +
     theme(legend.position="bottom") +
-    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of", today(), "grouped by 7 day interval"))
+    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of", today(), "grouped by 10 day interval"))
 
 gridExtra::grid.arrange(postHits_N_Days, postHits_N_Days_Grouped)
 
