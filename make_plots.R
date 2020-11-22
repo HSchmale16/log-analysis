@@ -3,14 +3,15 @@
 # Henry J Schmale
 # Log Analysis Plotting Script
 
-library(rjson)
-library(ggplot2)
-library(dplyr)
-library(lubridate)
-library(reshape2)
-library(scales)
-library(tidyr)
-
+suppressPackageStartupMessages(suppressWarnings({
+    library(rjson)
+    library(ggplot2)
+    library(dplyr)
+    library(lubridate)
+    library(reshape2)
+    library(scales)
+    library(tidyr)
+}))
 
 #############################################
 # Some Knobs to twist and turn
