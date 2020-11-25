@@ -11,5 +11,5 @@ PostHitCountCsv=postHits.csv
 
 
 # run the log analysis
-./log_count_views.py $PlaceLogs/* | tr [:upper:] [:lower:] | sort > $ArticleViewCsv
+./log_count_views.py $PlaceLogs/* > $ArticleViewCsv
 ./make_plots.R
