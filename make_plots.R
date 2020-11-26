@@ -40,16 +40,16 @@ livePosts <- names(tags)
 # For the Future to develop a better category stuff
 buildPostToTagMapping <- function(posttags_json=tags) {
   posts <- c()
-  tags <- c()
-  for (postname in names(posttags_json)) {
-    for (tag in posttags_json[[postname]]) {
+  tag_vec <- c()
+  for (postname in names(tags)) {
+    for (tag in tags[[postname]]) {
       posts <- append(posts, postname)
-      tags <- append(tags, tag)
+      tag_vec <- append(tag_vec, tag)
     }
   }
   data.frame(
     path = posts,
-    tag = tags
+    tag = tag_vec
   )
 }
 
@@ -62,6 +62,7 @@ hitCounts$date <- as.Date(hitCounts$date)
 
 # Select only those posts which currently are live on my site.
 livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
+
 
 
 
@@ -81,6 +82,12 @@ ggplot(postTotalHitsAllTime, aes(y = path, x = hits, label = hits)) +
 getMostViewedAllTimePosts <- function(n=NUM_MOST_RECENT_POSTS) {
   postTotalHitsAllTime %>% arrange(-hits) %>% top_n(n) %>% select(path)
 }
+
+buildPostToTagMapping() %>%
+  ggplot(aes(y=tag)) +
+    geom_bar() +
+    ggtitle("Number of Posts Under Tags")
+
 
 #################################################
 # Post Hits in the Last N Days (LAST_N_DAYS)
