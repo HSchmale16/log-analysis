@@ -36,8 +36,17 @@ def get_status_code(code):
 
 def do_log_file(logfile):
     views = set()
+    # A series of user agents we don't care about because those are
+    # bots, and I want real people. We don't do any tracking on this.
+    #
+    # Rules are as follows:
+    # * If it contains bots, spider, crawler it covers most well-behaved
+    #   bots, some people set their user agent to something useless
+    #   like their domain name. We need to filter that out too.
+    # * Also exclude semrush because they don't always name their bot
+    #   right, but at least their UA says it's them.
     bad_ua = re.compile(
-        '[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler|[Ss]em[Rr]ush'
+        '[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler|[Ss]em[Rr]ush|lytics|[Pp]anscient'
     )
     logline_re = re.compile(r'\"(.*?)\"|\[(.*?)\]|(\S+)')
     for line in logfile.readlines():
@@ -57,8 +66,9 @@ def do_log_file(logfile):
             except IndexError:
                 continue
 
+            # Skip a select series of requests
             if req[0].upper() != 'GET' and \
-                    not 200 <= status_code < 400 or \
+                    status_code != 200 or \
                     not url.startswith('/20'):
                 continue
 
