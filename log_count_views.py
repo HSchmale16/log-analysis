@@ -45,8 +45,13 @@ def do_log_file(logfile):
     #   like their domain name. We need to filter that out too.
     # * Also exclude semrush because they don't always name their bot
     #   right, but at least their UA says it's them.
+    # * Some people don't label their bots properly. If
+    #   are building a bot, give it a descriptive name in the
+    #   user-agent. Include a url for details about it. Don't make me
+    #   google it. Looking at you Panscient and Datanyze.
     bad_ua = re.compile(
         '[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler|[Ss]em[Rr]ush|lytics|[Pp]anscient'
+        '|facebookexternalhit|Google-AMPHTML|Datanyze'
     )
     logline_re = re.compile(r'\"(.*?)\"|\[(.*?)\]|(\S+)')
     for line in logfile.readlines():
