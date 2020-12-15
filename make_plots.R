@@ -243,8 +243,9 @@ normHitsSincePub <- livePostHit %>%
 normHitsSincePub %>% 
   slice_max(order_by = hitsSincePub, n=1) %>%
   ggplot(aes(x=daysSincePub, y=hitsSincePub)) +
-  geom_point() +
-  ggtitle(paste("Days Since Pub vs Total Hits at Current Views as of", today()))
+    scale_x_sqrt() +
+    geom_point() +
+    ggtitle(paste("Days Since Pub vs Total Hits at Current Views as of", today()))
 
 
 
