@@ -35,6 +35,7 @@ def get_status_code(code):
         return -1
 
 def do_log_file(logfile):
+    GOOD_STATUS_CODES = (200, 302, 304)
     views = set()
     # A series of user agents we don't care about because those are
     # bots, and I want real people. We don't do any tracking on this.
@@ -72,8 +73,9 @@ def do_log_file(logfile):
                 continue
 
             # Skip a select series of requests
-            if req[0].upper() != 'GET' and \
-                    status_code != 200 or \
+            # Such as non-get requests, and weird status codes
+            if req[0].upper() != 'GET' or \
+                    status_code not in GOOD_STATUS_CODES or \
                     not url.startswith('/20'):
                 continue
 
