@@ -35,7 +35,7 @@ def get_status_code(code):
         return -1
 
 def do_log_file(logfile):
-    GOOD_STATUS_CODES = (200, 302, 304)
+    GOOD_STATUS_CODES = set([200, 302, 304, 301])
     views = set()
     # A series of user agents we don't care about because those are
     # bots, and I want real people. We don't do any tracking on this.
