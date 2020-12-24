@@ -4,6 +4,7 @@
 
 import re
 import sys
+import operator
 from multiprocessing import Pool, cpu_count
 from collections import Counter
 from collections import namedtuple
@@ -78,6 +79,12 @@ def do_log_file(logfile):
                     status_code not in GOOD_STATUS_CODES or \
                     not url.startswith('/20'):
                 continue
+           
+            # Handle people adding query params to the url
+            # Cause otherwise it won't be counted
+            q_mark = url.find('?')
+            if q_mark > 0:
+                url = url[:q_mark]
 
             date = get_time(match[3])
             ip = match[0]
@@ -87,17 +94,20 @@ def do_log_file(logfile):
 def do_filename(filename):
     with open(filename) as f:
         return do_log_file(f)
-
 def do_many_files(filenames): 
     with Pool(cpu_count()) as pool: 
         return pool.map(do_filename, filenames)
 
+def do_many_files_seq(filenames):
+    return map(do_filename, filenames)
 
 def main():
     if len(sys.argv) > 1:
-        url_counts = do_many_files(sys.argv[1:])
-        totals = reduce(lambda accum, x: accum + x,
-                        url_counts, Counter())
+        # For some reason it's way slower in parallel. I'm going to assume that
+        # the fork overhead is causing this. It also uses less memory by doing
+        # it sequentially.
+        url_counts = do_many_files_seq(sys.argv[1:])
+        totals = reduce(operator.add, url_counts, Counter())
     else:
         totals = do_log_file(sys.stdin)
 
