@@ -85,6 +85,8 @@ def do_log_file(logfile):
             q_mark = url.find('?')
             if q_mark > 0:
                 url = url[:q_mark]
+                #if len(url[q_mark:]) > 1:
+                #    eprint(url[q_mark:])
 
             date = get_time(match[3])
             ip = match[0]
