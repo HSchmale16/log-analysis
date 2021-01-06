@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
-# Counts occurances of a post url and counts them up.
-# Also excludes bad user agents
+"""
+File: log_count_views.py
+Author: Henry J Schmale
+
+Counts occurances of a post url and counts them up.
+Also excludes bad user agents
+"""
+
 
 import re
 import sys
@@ -19,24 +25,45 @@ MAX_LINE_LENGTH = 900
 SetKey = namedtuple('LogKey', ['url', 'date', 'ip'])
 LogKey = namedtuple('LogKey', ['url', 'date'])
 
+# The status codes for requests that we will consider.
+# 200 Ok, 302 redirect, 304 not modified, 301 moved permanently
+GOOD_STATUS_CODES = [200, 302, 304, 301]
+
+
 def eprint(*args, **kwargs):
+    """
+    shorthand to print to stderr
+    """
     print(*args, file=sys.stderr, **kwargs)
 
 def to_date(date):
+    """
+    Shorthand to format dates to be as expected by other progress in the
+    suite.
+    """
     return time.strftime('%Y/%m/%d', date)
 
 def get_time(timestr):
+    """
+    Given a time str convert it to our favored date format.
+    """
     datestr = timestr.split()[0]
     return to_date(time.strptime(datestr, "%d/%b/%Y:%H:%M:%S"))
 
-def get_status_code(code):
+def get_status_code(code : str):
+    """
+    Given a status code entry it tries to read it.
+    If it can't it returns negative one.
+    """
     try:
         return int(code)
     except ValueError:
         return -1
 
 def do_log_file(logfile):
-    GOOD_STATUS_CODES = set([200, 302, 304, 301])
+    """
+    Processes a single log file given an open log file.
+    """
     views = set()
     # A series of user agents we don't care about because those are
     # bots, and I want real people. We don't do any tracking on this.
@@ -57,8 +84,10 @@ def do_log_file(logfile):
     )
     logline_re = re.compile(r'\"(.*?)\"|\[(.*?)\]|(\S+)')
     for line in logfile.readlines():
+        # skip long lines
         if len(line) > MAX_LINE_LENGTH:
             continue
+
         match = list(map(''.join, logline_re.findall(line)))
         if not bad_ua.search(match[-1]):
             req_str_index = len(match) - 9 + 4
@@ -79,35 +108,52 @@ def do_log_file(logfile):
                     status_code not in GOOD_STATUS_CODES or \
                     not url.startswith('/20'):
                 continue
-           
+
             # Handle people adding query params to the url
             # Cause otherwise it won't be counted
             q_mark = url.find('?')
             if q_mark > 0:
-                url = url[:q_mark]
+                # Good print out query params.
                 #if len(url[q_mark:]) > 1:
                 #    eprint(url[q_mark:])
+                url = url[:q_mark]
 
             date = get_time(match[3])
-            ip = match[0]
-            views.add(SetKey(url, date, ip)) 
-    return Counter(LogKey(url, date) for url,date,ip in views)
+            ip_addr = match[0]
+            views.add(SetKey(url, date, ip_addr))
+    return Counter(LogKey(url, date) for url,date,ip_addr in views)
 
-def do_filename(filename):
+
+def do_filename(filename : str):
+    """
+    Process a single log file
+    """
     with open(filename) as f:
         return do_log_file(f)
-def do_many_files(filenames): 
-    with Pool(cpu_count()) as pool: 
+
+def do_many_files(filenames : list[str]):
+    """
+    Process many files using the multiprocessing pool construct.
+    This makes sense when there's enough large files, that work is
+    shared.
+    """
+    with Pool(cpu_count()) as pool:
         return pool.map(do_filename, filenames)
 
-def do_many_files_seq(filenames):
+def do_many_files_seq(filenames : list[str]):
+    """
+    Process the files sequentially using a standard map construct.
+    """
     return map(do_filename, filenames)
 
 def main():
+    """
+    The program entry point.
+    """
     if len(sys.argv) > 1:
-        # For some reason it's way slower in parallel. I'm going to assume that
-        # the fork overhead is causing this. It also uses less memory by doing
-        # it sequentially.
+        # For some reason it's way slower in parallel. I'm going to assume
+        # that the fork overhead is causing this. It also uses less memory
+        # by doing it sequentially.
         url_counts = do_many_files_seq(sys.argv[1:])
         totals = reduce(operator.add, url_counts, Counter())
     else:

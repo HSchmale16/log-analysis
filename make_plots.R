@@ -94,7 +94,7 @@ buildPostToTagMapping() %>%
 #################################################
 
 
-postHits_N_Days <- livePostHit %>%
+livePostHit %>%
   filter(date >= bisect_date) %>%
   group_by(path) %>%
   summarise(hits = sum(hits)) %>%
@@ -103,20 +103,16 @@ postHits_N_Days <- livePostHit %>%
     geom_text(size = 3, hjust = -1) +
     ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
 
-postHits_N_Days_Grouped <- livePostHit %>%
+livePostHit %>%
   filter(date >= bisect_date) %>%
-  mutate(daysAgo=as.integer(today() - date),
-         chunks = as.factor(floor(daysAgo/10))) %>%
-  group_by(path, chunks) %>%
+  mutate(weekyear=strftime(date, format="%Y-W%V")) %>%
+  group_by(path, weekyear) %>%
   summarise(hits = sum(hits)) %>%
-  ggplot(aes(y = path, x = hits, label=hits, fill=chunks)) +
+  ggplot(aes(y = path, x = hits, label=hits, fill=weekyear)) +
     geom_bar(stat="identity") +
     theme(legend.position="bottom") +
-    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of", today(), "grouped by 10 day interval"))
+    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of", today(), "grouped by week in year"))
 
-gridExtra::grid.arrange(postHits_N_Days, postHits_N_Days_Grouped)
-
-rm(postHits_N_Days, postHits_N_Days_Grouped)
 
 livePostHit %>%
     filter(date >= bisect_date) %>%
@@ -196,7 +192,8 @@ ggplot(summarizedPostHit, aes(x = path, y = dates, fill = hits)) +
 
 
 #################################################
-# Grouped By WeekDay
+# Grouped By Day of Week
+# Ex. Sat, Sun .... Friday
 #################################################
 
 weekdayPostHit <- livePostHit %>%

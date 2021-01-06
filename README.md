@@ -1,6 +1,7 @@
 # log-analysis
 
-A set of scripts to analyze the most popular posts on my blog.
+A set of scripts to analyze the most popular posts on my
+[blog](https://www.henryschmale.org).
 
 I assume that posts urls are formatted like
 `/{YEAR}/{MONTH_NUM}/{MONTH_DAY_NUM}/{post_title}`. It assumes that the
