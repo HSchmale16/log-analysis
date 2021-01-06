@@ -128,10 +128,10 @@ def do_filename(filename : str):
     """
     Process a single log file
     """
-    with open(filename) as f:
-        return do_log_file(f)
+    with open(filename) as the_log:
+        return do_log_file(the_log)
 
-def do_many_files(filenames : list[str]):
+def do_many_files(filenames):
     """
     Process many files using the multiprocessing pool construct.
     This makes sense when there's enough large files, that work is
@@ -140,7 +140,7 @@ def do_many_files(filenames : list[str]):
     with Pool(cpu_count()) as pool:
         return pool.map(do_filename, filenames)
 
-def do_many_files_seq(filenames : list[str]):
+def do_many_files_seq(filenames):
     """
     Process the files sequentially using a standard map construct.
     """
