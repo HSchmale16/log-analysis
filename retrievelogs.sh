@@ -31,7 +31,8 @@ last_count=$(getReqCount)
 
 # Recompress files because we need to uncomress to read them 
 bzip2 access_log.20* 2>/dev/null
-rsync --checksum -v -a $SSHLocation:$GetLogs . 
+rsync --checksum -v -a $SSHLocation:$GetLogs . || exit -1
+
 
 # uncompress files
 bunzip2 *.bz2
