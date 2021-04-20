@@ -1,5 +1,12 @@
 #!/bin/bash
-# Log Analysis
+# Apache Access Log Analysis: Do Most Everything Script
+# 
+# This script actually runs the log processing python script then uses R
+# to create a set of PDFs as a report.
+#
+# Written by Henry J Schmale
+#
+
 
 
 # Location to place downloaded logs
@@ -14,6 +21,14 @@ function countViewsFromCsv() {
         awk -F, '{s+=$3}END{print s}' $ArticleViewCsv || echo 0
 }
 
+# Calculate when this program was last run. Based on articleView file.
+# Since I get views everyday we can use the most recent view from the
+# report file.
+if [[ -f "$ArticleViewCsv" ]]
+then 
+    lastRunOn=$(cut -f 2 -d , "$ArticleViewCsv" | sort -rn | head -n1)
+    echo "LAST VIEW SAW BY SCRIPT: $lastRunOn"
+fi
 
 # run the log analysis
 BEFORE_VIEW_COUNT=$(countViewsFromCsv)
