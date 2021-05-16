@@ -71,7 +71,7 @@ livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
 #################################################
 postTotalHitsAllTime <- livePostHit %>%
   group_by(path) %>%
-  summarise(hits=sum(hits))
+  summarise(hits=sum(hits), .groups = 'drop')
 
 ggplot(postTotalHitsAllTime, aes(y = path, x = hits, label = hits)) +
   geom_bar(stat = 'identity', fill="lightblue") +
@@ -83,10 +83,10 @@ getMostViewedAllTimePosts <- function(n=NUM_MOST_RECENT_POSTS) {
   postTotalHitsAllTime %>% arrange(-hits) %>% top_n(n) %>% select(path)
 }
 
-buildPostToTagMapping() %>%
-  ggplot(aes(y=tag)) +
-    geom_bar() +
-    ggtitle("Number of Posts Under Tags")
+#buildPostToTagMapping() %>%
+#  ggplot(aes(y=tag)) +
+#    geom_bar() +
+#    ggtitle("Number of Posts Under Tags")
 
 
 #################################################
@@ -97,7 +97,7 @@ buildPostToTagMapping() %>%
 livePostHit %>%
   filter(date >= bisect_date) %>%
   group_by(path) %>%
-  summarise(hits = sum(hits)) %>%
+  summarise(hits = sum(hits), .groups = 'drop') %>%
   ggplot(aes(y = path, x = hits, label = hits)) +
     geom_bar(stat="identity") +
     geom_text(size = 3, hjust = -1) +
@@ -107,7 +107,7 @@ livePostHit %>%
   filter(date >= bisect_date) %>%
   mutate(weekyear=strftime(date, format="%Y-W%V")) %>%
   group_by(path, weekyear) %>%
-  summarise(hits = sum(hits)) %>%
+  summarise(hits = sum(hits), .groups = 'drop') %>%
   ggplot(aes(y = path, x = hits, label=hits, fill=weekyear)) +
     geom_bar(stat="identity") +
     theme(legend.position="bottom") +
@@ -117,7 +117,7 @@ livePostHit %>%
 livePostHit %>%
     filter(date >= bisect_date) %>%
     group_by(date) %>%
-    summarize(hits=sum(hits)) %>%
+    summarize(hits=sum(hits), .groups = 'drop') %>%
     ggplot(aes(x = date, y = hits, label = hits)) +
         geom_line() +
         geom_text(size = 3, vjust=-1) +
@@ -128,7 +128,7 @@ livePostHit %>%
 livePostHit %>%
     filter(date >= bisect_date) %>%
     group_by(path, date) %>%
-    summarize(hits = sum(hits)) %>%
+    summarize(hits = sum(hits), .groups = 'drop') %>%
     ggplot(aes(x = path, y = date, fill = hits)) +
       geom_tile() +
       coord_flip() +
@@ -142,7 +142,7 @@ livePostHit %>%
 #################################################
 daily_hits <- livePostHit %>%
     group_by(date) %>%
-    summarise(daily=sum(hits)) %>%
+    summarise(daily=sum(hits), .groups = 'drop') %>%
     arrange(date) %>% 
     mutate(total=cumsum(daily), year=year(date), yearday=strftime(date, "%j"))
 
@@ -181,7 +181,7 @@ ggplot(hits_per_month, aes(x = month, y = hits, label = hits)) +
 #################################################
 summarizedPostHit <- livePostHit %>%
   group_by(path, dates=floor_date(date, "quarter")) %>%
-  summarize(hits=sum(hits), pubDate=as.Date(substr(path,2,11)))
+  summarize(hits=sum(hits), pubDate=as.Date(substr(path,2,11)), .groups = 'drop')
 
 ggplot(summarizedPostHit, aes(x = path, y = dates, fill = hits)) +
   geom_tile() +
