@@ -3,6 +3,10 @@
 # Henry J Schmale
 # Log Analysis Plotting Script
 
+packages <- c(
+    "rjson", "ggplot2", "dplyr", "lubridate", "reshape2", "scales", "tidyr"
+)
+
 suppressPackageStartupMessages(suppressWarnings({
     library(rjson)
     library(ggplot2)
