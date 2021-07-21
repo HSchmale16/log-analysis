@@ -25,6 +25,7 @@ NUM_MOST_RECENT_POSTS <- 6
 
 LAST_N_DAYS <- 30
 bisect_date <- as.Date(today(), format="%Y-%m-%d") - LAST_N_DAYS
+SEVEN_DAYS_AGO <- as.Date(today(), format="%Y-%m-%d") - 7
 
 #############################################
 # Begin primary code execution
@@ -102,32 +103,42 @@ livePostHit %>%
   filter(date >= bisect_date) %>%
   group_by(path) %>%
   summarise(hits = sum(hits), .groups = 'drop') %>%
+  filter(hits > 1) %>%
   ggplot(aes(y = path, x = hits, label = hits)) +
     geom_bar(stat="identity") +
     geom_text(size = 3, hjust = -1) +
     ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
 
 livePostHit %>%
-  filter(date >= bisect_date) %>%
-  mutate(weekyear=strftime(date, format="%Y-W%V")) %>%
-  group_by(path, weekyear) %>%
+  filter(date >= SEVEN_DAYS_AGO) %>%
+  group_by(path) %>%
   summarise(hits = sum(hits), .groups = 'drop') %>%
-  ggplot(aes(y = path, x = hits, label=hits, fill=weekyear)) +
+  filter(hits > 1) %>%
+  ggplot(aes(y = path, x = hits, label=hits)) +
     geom_bar(stat="identity") +
+    geom_text(size = 3, hjust = -1) +
     theme(legend.position="bottom") +
-    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of", today(), "grouped by week in year"))
+    ggtitle(paste("Post Hits in the Past", 7, "Days as of", today()))
 
-
-livePostHit %>%
-    filter(date >= bisect_date) %>%
+overAllHistInLastNDays <- function(nDays) {
+  from_date <- as.Date(today(), format="%Y-%m%-%d") - nDays
+  hitsPerDay <- livePostHit %>%
+    filter(date >= from_date) %>%
     group_by(date) %>%
-    summarize(hits=sum(hits), .groups = 'drop') %>%
-    ggplot(aes(x = date, y = hits, label = hits)) +
-        geom_line() +
-        geom_text(size = 3, vjust=-1) +
-        theme(axis.text = element_text(angle=75, hjust = 1)) +
-        ggtitle(paste("Hit Counts in the Past", LAST_N_DAYS, "Days as of ", today()))
-        
+    summarise(hits = sum(hits), .groups='drop')
+    
+  totalHits <- sum(hitsPerDay$hits)
+
+  ggplot(hitsPerDay, aes(x = date, y = hits, label=hits)) +  
+    geom_bar(stat='identity') +
+    geom_text(size=3, vjust=-1) +
+    theme(axis.text = element_text(angle=75, hjust = 1)) +
+    ggtitle(paste("Hit Counts in the Past", LAST_N_DAYS, "Days as of ", today(), " (total = ", totalHits, ")"))
+}
+
+overAllHistInLastNDays(7)
+overAllHistInLastNDays(30)
+          
 
 livePostHit %>%
     filter(date >= bisect_date) %>%
