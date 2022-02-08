@@ -3,9 +3,14 @@
 # Henry J Schmale
 # Log Analysis Plotting Script
 
-packages <- c(
+required.packages <- c(
     "rjson", "ggplot2", "dplyr", "lubridate", "reshape2", "scales", "tidyr"
 )
+
+new.packages <- required.packages[!(required.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) {
+    install.packages(new.packages,  repos='http://cran.us.r-project.org')
+}
 
 suppressPackageStartupMessages(suppressWarnings({
     library(rjson)
