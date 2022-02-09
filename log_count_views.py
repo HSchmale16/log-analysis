@@ -128,7 +128,7 @@ def do_filename(filename : str):
     """
     Process a single log file
     """
-    with open(filename) as the_log:
+    with open(filename, encoding='ascii') as the_log:
         return do_log_file(the_log)
 
 def do_many_files(filenames):
@@ -154,7 +154,7 @@ def main():
         # For some reason it's way slower in parallel. I'm going to assume
         # that the fork overhead is causing this. It also uses less memory
         # by doing it sequentially.
-        url_counts = do_many_files_seq(sys.argv[1:])
+        url_counts = do_many_files(sys.argv[1:])
         totals = reduce(operator.add, url_counts, Counter())
     else:
         totals = do_log_file(sys.stdin)
