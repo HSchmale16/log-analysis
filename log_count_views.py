@@ -80,7 +80,7 @@ def do_log_file(logfile):
     #   google it. Looking at you Panscient and Datanyze.
     bad_ua = re.compile(
         '[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler|[Ss]em[Rr]ush|lytics|[Pp]anscient'
-        '|facebookexternalhit|Google-AMPHTML|Datanyze|python.+requests'
+        '|facebookexternalhit|Google-AMPHTML|Datanyze|python.+requests|Google-PageRenderer'
     )
     logline_re = re.compile(r'\"(.*?)\"|\[(.*?)\]|(\S+)')
     for line in logfile.readlines():
