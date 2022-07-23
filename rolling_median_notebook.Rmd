@@ -1,0 +1,37 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+```
+
+
+```{r}
+x <- read.csv('athenaResults.csv')
+y <- x %>% group_by(as_of_when) %>% summarise(total_today = sum(today_count))
+n <- 5
+
+median_roll <- numeric(length(y$as_of_when) - n)
+for(i in seq_along(median_roll)){
+  median_roll[i] <- median(y$total_today[i:(i+n)])
+}
+median_roll = c(seq(from=1, to=1, length.out=n), median_roll)
+y$median <- median_roll
+y$as_of_when <- as.Date(y$as_of_when)
+```
+
+```{r}
+y %>%
+  gather(variable, value, -as_of_when) %>%
+  ggplot(aes(x=as_of_when, y=value, color=variable)) +
+  geom_line() + scale_y_log10()
+
+```
+
+
+
+

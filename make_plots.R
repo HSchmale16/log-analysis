@@ -28,7 +28,7 @@ suppressPackageStartupMessages(suppressWarnings({
 
 NUM_MOST_RECENT_POSTS <- 6
 
-LAST_N_DAYS <- 30
+LAST_N_DAYS <- 7
 bisect_date <- as.Date(today(), format="%Y-%m-%d") - LAST_N_DAYS
 SEVEN_DAYS_AGO <- as.Date(today(), format="%Y-%m-%d") - 7
 
