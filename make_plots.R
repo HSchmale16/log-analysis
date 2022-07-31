@@ -28,7 +28,7 @@ suppressPackageStartupMessages(suppressWarnings({
 
 NUM_MOST_RECENT_POSTS <- 6
 
-LAST_N_DAYS <- 7
+LAST_N_DAYS <- 30
 bisect_date <- as.Date(today(), format="%Y-%m-%d") - LAST_N_DAYS
 SEVEN_DAYS_AGO <- as.Date(today(), format="%Y-%m-%d") - 7
 
@@ -72,7 +72,8 @@ hitCounts$date <- as.Date(hitCounts$date)
 
 # Select only those posts which currently are live on my site.
 livePostHit <- hitCounts[hitCounts$path %in% livePosts,]
-
+livePostHit$pubDate=as.Date(substr(livePostHit$path,2,11))
+livePostHit$yearPub <- year(livePostHit$pubDate)
 
 
 
@@ -86,7 +87,8 @@ postTotalHitsAllTime <- livePostHit %>%
 ggplot(postTotalHitsAllTime, aes(y = path, x = hits, label = hits)) +
   geom_bar(stat = 'identity', fill="lightblue") +
   geom_text(size = 3) +
-  ggtitle("Total Views of Posts")
+  ggtitle("Total Views of Posts") +
+  scale_x_log10()
 
 # Gets the most viewed posts of all time
 getMostViewedAllTimePosts <- function(n=NUM_MOST_RECENT_POSTS) {
@@ -112,7 +114,8 @@ livePostHit %>%
   ggplot(aes(y = path, x = hits, label = hits)) +
     geom_bar(stat="identity") +
     geom_text(size = 3, hjust = -1) +
-    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today()))
+    ggtitle(paste("Post Hits in the Past", LAST_N_DAYS, "Days as of ", today())) +
+    scale_x_log10()
 
 livePostHit %>%
   filter(date >= SEVEN_DAYS_AGO) %>%
@@ -125,25 +128,39 @@ livePostHit %>%
     theme(legend.position="bottom") +
     ggtitle(paste("Post Hits in the Past", 7, "Days as of", today()))
 
-overAllHistInLastNDays <- function(nDays) {
-  from_date <- as.Date(today(), format="%Y-%m%-%d") - nDays
+overAllHistInLastNDays <- function(nDays, rollDays=3) {
+  from_count <- nDays + rollDays
+  from_date <- as.Date(today(), format="%Y-%m%-%d") - from_count
+  actual_from_date <- as.Date(today(), format="%Y-%m-%d") - nDays
   hitsPerDay <- livePostHit %>%
     filter(date >= from_date) %>%
     group_by(date) %>%
     summarise(hits = sum(hits), .groups='drop')
-    
+  
+  median_roll <- numeric(length(hitsPerDay$date) - rollDays)
+  for(i in seq_along(median_roll)){
+    median_roll[i] <- mean(hitsPerDay$hits[i:(i+rollDays)])
+  }
+  #median_roll = c(numeric(rollDays), median_roll)
+  hitsPerDay <- hitsPerDay %>%
+    filter(date >= actual_from_date) %>%
+    group_by(date) %>%
+    summarise(hits = sum(hits), .groups='drop')
+  hitsPerDay$median_roll <- median_roll
+  
   totalHits <- sum(hitsPerDay$hits)
 
   ggplot(hitsPerDay, aes(x = date, y = hits, label=hits)) +  
     geom_bar(stat='identity') +
+    geom_line(aes(x=date, y=median_roll), color="red") +
     geom_text(size=3, vjust=-1) +
     theme(axis.text = element_text(angle=75, hjust = 1)) +
-    ggtitle(paste("Hit Counts in the Past", LAST_N_DAYS, "Days as of ", today(), " (total = ", totalHits, ")"))
+    ggtitle(paste("Hit Counts in the Past", nDays, "Days as of ", today(), " (total = ", totalHits, ")"))
 }
 
 overAllHistInLastNDays(7)
 overAllHistInLastNDays(30)
-          
+overAllHistInLastNDays(60) 
 
 livePostHit %>%
     filter(date >= bisect_date) %>%

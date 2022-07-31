@@ -7,6 +7,7 @@ output: html_notebook
 library(dplyr)
 library(ggplot2)
 library(tidyr)
+library(lubridate)
 ```
 
 
@@ -16,19 +17,28 @@ y <- x %>% group_by(as_of_when) %>% summarise(total_today = sum(today_count))
 n <- 5
 
 median_roll <- numeric(length(y$as_of_when) - n)
+mean_roll <- numeric(length(y$as_of_when) - n)
 for(i in seq_along(median_roll)){
   median_roll[i] <- median(y$total_today[i:(i+n)])
+  mean_roll[i] <- mean(y$total_today[i:(i+n)])
 }
-median_roll = c(seq(from=1, to=1, length.out=n), median_roll)
+median_roll = c(numeric(n), median_roll)
+mean_roll = c(numeric(n), mean_roll)
 y$median <- median_roll
+y$mean <- mean_roll
 y$as_of_when <- as.Date(y$as_of_when)
 ```
 
 ```{r}
+LAST_N_DAYS <- 30
+bisect_date <- as.Date(today(), format="%Y-%m-%d") - LAST_N_DAYS
+
+#select(y, -total_today) %>%
 y %>%
   gather(variable, value, -as_of_when) %>%
+  filter(as_of_when >= bisect_date) %>%
   ggplot(aes(x=as_of_when, y=value, color=variable)) +
-  geom_line() + scale_y_log10()
+  geom_line() #+ scale_y_log10()
 
 ```
 
