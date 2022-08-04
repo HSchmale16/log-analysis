@@ -171,7 +171,7 @@ livePostHit %>%
       coord_flip() +
       geom_text(aes(label = hits)) +
       ggtitle("When posts were hit in the last 30 days") +
-      scale_fill_gradient(low='blue', high='red', trans='log10')
+      scale_fill_gradient(low='blue', high='red', trans='sqrt')
 
 
 #################################################
