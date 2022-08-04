@@ -171,7 +171,7 @@ livePostHit %>%
       coord_flip() +
       geom_text(aes(label = hits)) +
       ggtitle("When posts were hit in the last 30 days") +
-      scale_fill_continuous(low='blue', high='red')
+      scale_fill_gradient(low='blue', high='red', trans='log10')
 
 
 #################################################
@@ -225,7 +225,7 @@ ggplot(summarizedPostHit, aes(x = path, y = dates, fill = hits)) +
   coord_flip() +
   geom_text(aes(label = hits)) +
   ggtitle("Post Hits Over Time Grouped By Quarter") +
-  scale_fill_continuous(low='blue', high='red')
+  scale_fill_continuous(low='blue', high='red', trans='log10')
 
 
 #################################################
@@ -242,7 +242,7 @@ ggplot(weekdayPostHit, aes(x = path, y = weekday, fill = hits)) +
   coord_flip() +
   geom_text(aes(label = hits)) +
   ggtitle("Post Hits Grouped By Day Of Week - My Blog") +
-  scale_fill_continuous(low='blue', high='red')
+  scale_fill_continuous(low='blue', high='red', trans='log10')
 
 #################################################
 # Grouped By Day of Month
@@ -257,7 +257,7 @@ ggplot(monthdayPostHit, aes(x = path, y = monthday, fill = hits)) +
   coord_flip() +
   geom_text(aes(label = hits)) +
   ggtitle("Post Hits Grouped By Day Of Month - My Blog") +
-  scale_fill_continuous(low='blue', high='red')
+  scale_fill_continuous(low='blue', high='red', trans='log10')
 
 #################################################
 # Post view activity normalized for time since 
@@ -277,7 +277,7 @@ normHitsSincePub <- livePostHit %>%
 normHitsSincePub %>% 
   slice_max(order_by = hitsSincePub, n=1) %>%
   ggplot(aes(x=daysSincePub, y=hitsSincePub)) +
-    scale_x_sqrt() +
+    scale_x_log10() +
     geom_point() +
     ggtitle(paste("Days Since Pub vs Total Hits at Current Views as of", today()))
 
