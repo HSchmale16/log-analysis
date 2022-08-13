@@ -14,7 +14,7 @@ SELECT
     as_of_when,
     today_count
 FROM "attributes_as_top_level_columns"
-ORDER BY today_count
+ORDER BY as_of_when DESC, today_count DESC
 EOF
 
 exec_id_json=$(aws athena start-query-execution \
