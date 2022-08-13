@@ -88,7 +88,7 @@ ggplot(postTotalHitsAllTime, aes(y = path, x = hits, label = hits)) +
   geom_bar(stat = 'identity', fill="lightblue") +
   geom_text(size = 3) +
   ggtitle("Total Views of Posts") +
-  scale_x_log10()
+  scale_x_sqrt()
 
 # Gets the most viewed posts of all time
 getMostViewedAllTimePosts <- function(n=NUM_MOST_RECENT_POSTS) {
