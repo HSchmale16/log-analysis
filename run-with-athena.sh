@@ -14,6 +14,7 @@ SELECT
     as_of_when,
     today_count
 FROM "attributes_as_top_level_columns"
+WHERE the_url LIKE '/20%.html'
 ORDER BY as_of_when DESC, today_count DESC
 EOF
 
