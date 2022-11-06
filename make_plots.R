@@ -181,7 +181,11 @@ daily_hits <- livePostHit %>%
     group_by(date) %>%
     summarise(daily=sum(hits), .groups = 'drop') %>%
     arrange(date) %>% 
-    mutate(total=cumsum(daily), year=year(date), yearday=strftime(date, "%j"))
+    mutate(total=cumsum(daily), 
+	   year=year(date), 
+	   yearday=strftime(date, "%j"),
+	   quarter=floor_date(date, "quarter")
+    )
 
 daily_hits$yearday <- as.numeric(daily_hits$yearday)
 daily_hits$year <- as.factor(daily_hits$year)
@@ -198,6 +202,15 @@ daily_hits %>%
     ggplot(aes(x = yearday, y = cs, color=year)) +
         geom_line() +
         ggtitle('Cummulative Daily Post Hits Year Over Year')
+
+
+ggplot(daily_hits, aes(x = date, y = daily, group = quarter)) +
+	geom_boxplot() +
+	scale_y_sqrt() +
+	ggtitle("Box and Whisker of Total Daily Views Grouped By Quarter (sqrt scale)")
+
+
+ggsave("bw.png")
 
 #################################################
 # Monthly Hits

@@ -65,6 +65,7 @@ def do_log_file(logfile):
     Processes a single log file given an open log file.
     """
     views = set()
+
     # A series of user agents we don't care about because those are
     # bots, and I want real people. We don't do any tracking on this.
     #
@@ -80,7 +81,8 @@ def do_log_file(logfile):
     #   google it. Looking at you Panscient and Datanyze.
     bad_ua = re.compile(
         '[Bb]ot|[Ss]pider|[Ss]lurp|[Cc]rawler|[Ss]em[Rr]ush|lytics|[Pp]anscient'
-        '|facebookexternalhit|Google-AMPHTML|Datanyze|python.+requests|Google-PageRenderer'
+        '|facebookexternalhit|Google-AMPHTML|Datanyze|python.+requests|'
+        'Google-PageRenderer'
     )
     logline_re = re.compile(r'\"(.*?)\"|\[(.*?)\]|(\S+)')
     for line in logfile.readlines():
@@ -124,12 +126,13 @@ def do_log_file(logfile):
     return Counter(LogKey(url, date) for url,date,ip_addr in views)
 
 
-def do_filename(filename : str):
+def do_filename(filename:str):
     """
     Process a single log file
     """
     with open(filename, encoding='ascii') as the_log:
         return do_log_file(the_log)
+
 
 def do_many_files(filenames):
     """
@@ -140,11 +143,13 @@ def do_many_files(filenames):
     with Pool(cpu_count()) as pool:
         return pool.map(do_filename, filenames)
 
+
 def do_many_files_seq(filenames):
     """
     Process the files sequentially using a standard map construct.
     """
     return map(do_filename, filenames)
+
 
 def main():
     """
@@ -162,6 +167,7 @@ def main():
     for (url, date), count in totals.items():
         if url.startswith('/20') and url.endswith('.html'):
             print(','.join([url, date, str(count)]))
+
 
 if __name__ == '__main__':
     main()

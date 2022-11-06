@@ -13,6 +13,9 @@ NearlyFreeSpeech.net.
 I use python to process multiple log files in parallel then reduce the
 results together and write out a csv.
 
+Here's just one of the many types of plots it generates.
+
+[box and whisker grouped by quarter of total daily hits](bw.png)
 
 ## How To Use
 

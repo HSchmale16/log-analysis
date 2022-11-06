@@ -11,7 +11,7 @@ function get_output_location() {
 read -r -d '' QUERY_STR <<'EOF'
 SELECT 
     the_url,
-    as_of_when,
+    REPLACE(CAST(as_of_when AS VARCHAR), '-', '/'),
     today_count
 FROM "attributes_as_top_level_columns"
 WHERE the_url LIKE '/20%.html'
@@ -38,6 +38,8 @@ do
     sleep 0.2
 done
 
-aws s3 cp $output_loc athenaResults.csv
-sed '1d' athenaResults.csv > articleViews.csv
+aws s3 cp $output_loc athenaResults2.csv
+
+#cat <(tr -d '"' < athenaResults.csv) old.csv > athenaResults2.csv
+sed '1d' athenaResults2.csv > articleViews.csv
 ./make_plots.R
