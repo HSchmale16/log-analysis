@@ -184,7 +184,7 @@ daily_hits <- livePostHit %>%
     mutate(total=cumsum(daily), 
 	   year=year(date), 
 	   yearday=strftime(date, "%j"),
-	   quarter=floor_date(date, "quarter")
+	   quarter=floor_date(date, "month")
     )
 
 daily_hits$yearday <- as.numeric(daily_hits$yearday)
@@ -193,7 +193,10 @@ daily_hits$year <- as.factor(daily_hits$year)
 ggplot(daily_hits, aes(x = yearday, y = daily, fill=year)) +
     geom_bar(stat='identity') + 
     facet_grid(year ~ .) +
-    ggtitle("Daily Post Hit Counts")
+    ggtitle("Daily Post Hit Counts") +
+    scale_y_sqrt()
+
+ggsave("facet_year_days.png")
 
 daily_hits %>%
     group_by(year) %>% 
