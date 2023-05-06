@@ -8,6 +8,10 @@ function get_output_location() {
     echo $1 | jq .QueryExecution.ResultConfiguration.OutputLocation | tr -d '"'
 }
 
+function get_data_scanned() {
+    echo $1 | jq .QueryExecution.Statistics.DataScannedInBytes
+}
+
 read -r -d '' QUERY_STR <<'EOF'
 SELECT
 	the_url.S
@@ -39,6 +43,7 @@ do
     if [ "$status_str" == 'SUCCEEDED' ]
     then
         output_loc=$(get_output_location "$json")
+	echo "Bytes of Data Scanned: $(get_data_scanned "$json")"
         break
     fi
     sleep 0.2
